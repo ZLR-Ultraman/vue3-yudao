@@ -38,32 +38,23 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      # 方案1: 完全跳过 TypeScript 检查（推荐）
-      # 原因：项目运行时正常，类型错误不影响构建
-      # - name: TypeScript check
-      #   run: pnpm vue-tsc --noEmit --skipLibCheck
-      #   continue-on-error: true
-      #   env:
-      #     NODE_OPTIONS: --max_old_space_size=8192
-
-      # 方案2: 只做构建验证（构建本身会暴露致命错误）
+      # ESLint 检查（排除 Tinyflow 打包文件）
       - name: Lint ESLint
-        run: pnpm run lint:eslint
-        continue-on-error: false # ESLint 错误要阻塞
+        run: pnpm eslint --ext .js,.ts,.vue ./src --ignore-pattern "**/Tinyflow/**" --fix
+        continue-on-error: false
 
       - name: Lint Prettier
         run: pnpm prettier --check "src/**/*.{js,ts,json,tsx,css,less,scss,vue,html,md}"
-        continue-on-error: true # 格式错误只警告，不阻塞
+        continue-on-error: true
 
       - name: Lint Stylelint
         run: pnpm run lint:style
-        continue-on-error: true # 样式错误只警告
+        continue-on-error: true
 
       - name: Build production (关键验证)
         run: pnpm run build:prod
         env:
           NODE_OPTIONS: --max_old_space_size=8192
-        # 构建失败一定要阻塞，这才是核心
 
   docker-build:
     runs-on: ubuntu-latest
