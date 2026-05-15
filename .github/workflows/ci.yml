@@ -40,6 +40,8 @@ jobs:
 
       - name: TypeScript check
         run: pnpm run ts:check
+        env:
+          NODE_OPTIONS: --max_old_space_size=8192
 
       - name: Lint ESLint
         run: pnpm run lint:eslint
