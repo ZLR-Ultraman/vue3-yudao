@@ -20,12 +20,19 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
-          cache: 'pnpm'
 
       - name: Install pnpm
-        uses: pnpm/action-setup@v2
+        run: |
+          npm install -g pnpm@8.15.0
+          pnpm --version
+
+      - name: Cache pnpm store
+        uses: actions/cache@v3
         with:
-          version: 8
+          path: ~/.local/share/pnpm/store
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
@@ -37,7 +44,7 @@ jobs:
         run: pnpm run lint:eslint
 
       - name: Lint Prettier
-        run: pnpm run lint:format -- --check
+        run: pnpm prettier --check "src/**/*.{js,ts,json,tsx,css,less,scss,vue,html,md}"
 
       - name: Lint Stylelint
         run: pnpm run lint:style
@@ -85,8 +92,7 @@ jobs:
           tags: |
             type=ref,event=branch
             type=sha,prefix={{branch}}-
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
+            type=raw,value=latest,enable={{is_default_branch}}
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
