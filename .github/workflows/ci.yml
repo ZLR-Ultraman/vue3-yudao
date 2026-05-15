@@ -23,7 +23,8 @@ jobs:
 
       - name: Install pnpm
         run: |
-          npm install -g pnpm@8.15.0
+          PNPM_VERSION=$(node -p "require('./package.json').engines.pnpm || '11.0'")
+          npm install -g pnpm@$PNPM_VERSION
           pnpm --version
 
       - name: Cache pnpm store
